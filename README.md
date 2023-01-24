@@ -1,3 +1,13 @@
+# epgHz 
+
+This is an adapted version of the findPeaks method (below) that has been tailored for electropenetrography (EPG) waveforms. The script takes a WinDaq .csv file, normalizes the data, trims it to the desired section, and then uses the findPeaks method to calculate the number of peaks in this region (conventionally reported as hertz (Hz). 
+
+The initial version of this script (reported in [citation]) uses differing cutoff values by waveform to approximate reported Hz measurements for each waveform. Cutoff values used for each waveform are reported in a separate file. 
+
+The hope is that this method may help direct critical analysis of the calculating and reporting of Hz for EPG waveforms. Overtime, the goal is to move to more standardized and mathematically-defined methods and a more precise "peaks per second" metric. 
+
+**********
+
 # findPeaks
 
 A repo for a function I posted as part of my answer to a [quesiton about peak detection](http://stats.stackexchange.com/questions/22974/how-to-find-local-peaks-valleys-in-a-series-of-data/164830#164830) on StackExchange.
