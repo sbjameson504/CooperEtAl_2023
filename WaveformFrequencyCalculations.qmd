@@ -1,0 +1,72 @@
+---
+title: "WaveformFequencyCalculations"
+author: "Sam Jameson"
+format: html
+editor: visual
+---
+
+## For L's m= 10
+
+## For M4 m = 10
+
+## For N1 m = 15
+
+## For N2 m = 50
+
+## For all others m = 3
+
+```{r}
+
+#library(tidyverse)
+#library(data.table)
+#library(BBmisc)
+#BiocManager::install("IRanges")
+#library(IRanges)
+#library(fuzzyjoin)
+
+#Change value of m = in the line below to the appropriate value for the tested waveform
+find_peaks <- function (x, m = 10){
+                shape <- diff(sign(diff(x, na.pad = FALSE)))
+                pks <- sapply(which(shape < 0), FUN = function(i){
+                z <- i - m + 1
+                z <- ifelse(z > 0, z, 1)
+                w <- i + m + 1
+                w <- ifelse(w < length(x), w, length(x))
+              if(all(x[c(z : i, (i + 2) : w)] <= x[i + 1])) return(i + 1) else return(numeric(0))
+                })
+              pks <- unlist(pks)
+              pks
+}
+
+findHz <- function (x) {
+  q1 <- (length(x) - 1) / 100
+  q2 <- length(find_peaks(x, m = 10))
+  q2/q1
+}
+
+#Add file name for main CSV file: This is the full waveform file
+d1 <- read.csv("Full_exported_CSV_from_WinDaq.csv", header = TRUE)
+#This next line selects the relevant data from the file and drops the remainder
+d1 <- d1 %>% select(c(Relative.Time, Volt.1))
+
+#Add the start and end times for the full waveform in the relative.time = statements in the next line. This trims the file for normalization. This normalization may not be strictly necessary, but keeps everything standardized.
+d1 <- d1 %>% filter(Relative.Time >= 39.36 & Relative.Time <= 355.0)
+d2 <- normalize(d1$Volt.1, method = "range", range = c(0,1))
+d1$sVolt <- d2
+rm(d2)
+tbl1 <- d1
+
+#Add the name of the cutpoint CSV file here. See example cutpoint file format in the github folder. Do not change column headers.
+tbl2 <- read.csv("waveform_cutpoint.csv", header = TRUE)
+tbl2 <- na.omit(tbl2)
+tbl3 <- interval_inner_join(tbl1, tbl2, by = c("Relative.Time" = "start", "Relative.Time" = "end"))
+hz <- by(tbl3$sVolt, list(tbl3$type), findHz)
+setorder(tbl2, cols = "type")
+tbl2$hz <- hz
+
+#Uncomment the View or write commands depending on what you wish to do
+#View(tbl2)
+#Add the name of the output file here
+#write.csv(tbl2, "outputFrequency.csv")
+
+```
